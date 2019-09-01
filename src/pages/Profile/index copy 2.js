@@ -26,6 +26,9 @@ const schema = Yup.object().shape({
   email: Yup.string()
     .email('Insira um e-mail válido')
     .required('O e-mail é obrigatório'),
+  // password: Yup.string()
+  //   .min(6, 'No mínimo 6 caracteres')
+  //   .required('A senha é obrigatória'),
 });
 
 export default function Profile() {
@@ -42,6 +45,7 @@ export default function Profile() {
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [validateErrors, setvalidateErrors] = useState([]);
   const [nameError, setNameError] = useState();
   const [emailError, setEmailError] = useState();
 
@@ -51,30 +55,55 @@ export default function Profile() {
     setConfirmPassword('');
   }, [profile]);
 
-  async function handleSubmit() {
-    setNameError();
-    setEmailError();
+  useEffect(() => {
+    console.tron.log('useEffect_validateErrors :', validateErrors);
+  }, [validateErrors]);
+
+  async function validateData() {
+    const errors = [];
     try {
       await schema.validate({ name, email }, { abortEarly: false });
-      dispatch(
-        updateProfileRequest({
-          name,
-          email,
-          oldPassword,
-          password,
-          confirmPassword,
-        })
-      );
     } catch (err) {
-      // console.tron.log('err: ', err);
+      console.tron.log('err: ', err);
       err.inner.forEach(e => {
         if (e.path === 'name') {
           setNameError(e.message);
         } else if (e.path === 'email') {
           setEmailError(e.message);
         }
+        errors.push({
+          name: e.path,
+          message: e.message,
+        });
+        return errors;
       });
+      setvalidateErrors(errors);
     }
+    console.tron.log('errors: ', errors);
+    return errors;
+  }
+
+  function teste() {
+    const tmp = [0, 1];
+    console.tron.log('teste_tmp: ', tmp);
+    return tmp;
+  }
+
+  function handleSubmit() {
+    const temp_error = validateData();
+    const temp = teste();
+    console.tron.log('handleSubmit_temp :', temp);
+    console.tron.log('handleSubmit_temp_error :', temp_error);
+    // console.tron.log('validateErrors :', validateErrors);
+    dispatch(
+      updateProfileRequest({
+        name,
+        email,
+        oldPassword,
+        password,
+        confirmPassword,
+      })
+    );
   }
 
   function handleLogout() {

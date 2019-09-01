@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Image, Text } from 'react-native';
+import { Image } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import * as Yup from 'yup';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -21,13 +20,6 @@ import {
   LogoutButton,
 } from './styles';
 
-const schema = Yup.object().shape({
-  name: Yup.string().required('O nome é obrigatório'),
-  email: Yup.string()
-    .email('Insira um e-mail válido')
-    .required('O e-mail é obrigatório'),
-});
-
 export default function Profile() {
   const profile = useSelector(state => state.user.profile);
   const dispatch = useDispatch();
@@ -42,8 +34,6 @@ export default function Profile() {
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [nameError, setNameError] = useState();
-  const [emailError, setEmailError] = useState();
 
   useEffect(() => {
     setOldPassword('');
@@ -51,30 +41,16 @@ export default function Profile() {
     setConfirmPassword('');
   }, [profile]);
 
-  async function handleSubmit() {
-    setNameError();
-    setEmailError();
-    try {
-      await schema.validate({ name, email }, { abortEarly: false });
-      dispatch(
-        updateProfileRequest({
-          name,
-          email,
-          oldPassword,
-          password,
-          confirmPassword,
-        })
-      );
-    } catch (err) {
-      // console.tron.log('err: ', err);
-      err.inner.forEach(e => {
-        if (e.path === 'name') {
-          setNameError(e.message);
-        } else if (e.path === 'email') {
-          setEmailError(e.message);
-        }
-      });
-    }
+  function handleSubmit() {
+    dispatch(
+      updateProfileRequest({
+        name,
+        email,
+        oldPassword,
+        password,
+        confirmPassword,
+      })
+    );
   }
 
   function handleLogout() {
@@ -98,7 +74,6 @@ export default function Profile() {
             value={name}
             onChangeText={setName}
           />
-          {nameError && <Text style={{ color: 'red' }}>{nameError}</Text>}
           <FormInput
             icon="mail-outline"
             keyboardType="email-address"
@@ -111,7 +86,6 @@ export default function Profile() {
             value={email}
             onChangeText={setEmail}
           />
-          {emailError && <Text style={{ color: 'red' }}>{emailError}</Text>}
           <Separator />
           <FormInput
             icon="lock-outline"
